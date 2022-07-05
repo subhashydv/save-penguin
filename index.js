@@ -1,129 +1,155 @@
-class Horse {
-  #id;
-  #position;
-  #height;
-  #speed;
+class Game {
+  #horse;
+  #obstacle;
+  #groundViewEle;
+  #score;
 
-  constructor(id, position, height, speed) {
-    this.#id = id;
-    this.#position = position;
-    this.#height = height;
-    this.#speed = speed;
+  constructor(horse, obstacle, groundViewEle) {
+    this.#horse = horse;
+    this.#obstacle = obstacle;
+    this.#groundViewEle = groundViewEle;
+    this.#score = 0;
   }
 
-  move() {
-    this.#position.x -= this.#speed.x;
+  #groundWidth() {
+    return this.#groundViewEle.clientWidth;
   }
 
-  moveDown() {
-    this.#position.y += 8;
+  updateScore(obstacle) {
+    if (obstacle.hasReached(this.#groundWidth())) {
+      this.#score++;
+    }
   }
 
-  moveUp() {
-    this.#position.y -= 8;
+  moveObstacle() {
+    this.#obstacle.forEach(obstacle => {
+      obstacle.updatePosition(this.#groundWidth());
+      this.updateScore(obstacle);
+    });
+  };
+
+  getScore() {
+    return this.#score;
   }
 
-  getDetails() {
-    const position = { x: this.#position.x, y: this.#position.y };
-    return { id: this.#id, position, height: this.#height };
+  hasObstacleHit(obstacle, horseDetail) {
+    const obstacleDetail = getEntityDetail(obstacle);
+
+    if (obstacleDetail.max.x > horseDetail.min.x) {
+      if (obstacleDetail.max.y > horseDetail.min.y && obstacleDetail.min.y < horseDetail.max.y) {
+        return true;
+      }
+    }
+    return false;
   }
+
+  hasHorseHit() {
+    const horseDetail = getEntityDetail(this.#horse);
+    if (horseDetail.min.y < 0 || horseDetail.max.y > 400) {
+      return true;
+    }
+    for (const obstacle of this.#obstacle) {
+      if (this.hasObstacleHit(obstacle, horseDetail)) {
+        return true;
+      };
+    }
+    return false;
+  };
+}
+
+
+const drawScore = score => {
+  const scoreBoard = document.getElementById('score');
+  const content = scoreBoard.innerText.split(':');
+  content[1] = score;
+  scoreBoard.innerText = content.join(':');
 };
 
-class Obstacle {
-  #id;
-  #position;
-  #height;
-  #speed;
-
-  constructor(id, position, height, speed) {
-    this.#id = id;
-    this.#position = position;
-    this.#height = height;
-    this.#speed = speed;
-  }
-
-  move() {
-    this.#position.x += this.#speed.x;
-  }
-
-  getDetails() {
-    const position = { x: this.#position.x, y: this.#position.y };
-    return { id: this.#id, position, height: this.#height };
-  }
-};
-
-const roadWay = (roadPattern) => {
-  return roadPattern.slice(2) + roadPattern.slice(0, 2);
-};
-
-const drawRoad = (ground) => {
-  const road = '-----------+';
-  const element = document.createElement('div');
-  element.id = 'road';
-  element.innerText = road.repeat(11);
-  ground.appendChild(element);
-};
-
-const updateRoad = () => {
-  const element = document.getElementById('road');
-  const newRoad = roadWay(element.innerText);
-  element.innerText = newRoad;
-};
-
-const isHorseWon = horse => {
-  const { x } = horse.getDetails().position;
-  return x <= 12;
-};
-
-const stopHorse = () => {
-  const horse = document.getElementById('horse-1');
-  horse.style.backgroundImage = "url('horseStopped.png')";
-};
-
-const drawObstacle = (ground, obstacle) => {
-  const { id, position, height } = obstacle.getDetails();
+const drawObject = (view, object) => {
+  const { id, position, size } = object.getDetails();
   ele = document.getElementById(id) || document.createElement('div');
   ele.id = id;
   ele.style.top = position.y;
   ele.style.left = position.x;
-  ele.style.height = height;
-  ground.appendChild(ele);
-}
-
-const drawHorse = (ground, horse) => {
-  const { id, position, height } = horse.getDetails();
-  const ele = document.getElementById(id) || document.createElement('div');
-  ele.id = id;
-  ele.style.top = position.y;
-  ele.style.left = position.x;
-  ele.style.height = height;
-  ground.appendChild(ele);
+  ele.style.width = size.width;
+  ele.style.height = size.height;
+  view.appendChild(ele);
 };
 
-const move = (event, horse) => {
+const drawObstacle = (ground, obstacles) => {
+  obstacles.forEach(obstacle => {
+    const { id, position, size } = obstacle.getDetails();
+    ele = document.getElementById(id) || document.createElement('div');
+    ele.id = id;
+    ele.style.top = position.y;
+    ele.style.left = position.x;
+    ele.style.width = size.width;
+    ele.style.height = size.height;
+    ele.className = 'obstacle';
+    ground.appendChild(ele);
+  });
+};
+
+const drawHorse = (ground, horse) => {
+  drawObject(ground, horse);
+};
+
+const moveHorse = (event, horse) => {
   if (event.key === 'ArrowUp') {
     horse.moveUp();
   }
   if (event.key === 'ArrowDown') {
     horse.moveDown();
   }
-}
+};
+
+const getEntityDetail = entity => {
+  const { position, size } = entity.getDetails();
+  const min = { x: position.x, y: position.y };
+  const max = { x: position.x + size.width, y: position.y + size.height };
+  return { min, max };
+};
+
+const stopHorse = () => {
+  const horse = document.getElementById('horse-1');
+  horse.style.backgroundImage = 'url("./horseStopped.png")';
+};
+
+const randomInt = limit => {
+  return Math.ceil(Math.random() * limit);
+};
+
+const createObstacles = (Obstacle, id) => {
+  return new Obstacle(id, { x: -randomInt(700), y: randomInt(350) }, { width: 25, height: 50 }, { dx: 10, dy: 0 });
+};
 
 const main = () => {
-  const ground = document.getElementById('ground');
-  const horse = new Horse('horse-1', { x: 680, y: 150 }, 120, { x: 3, y: 0 });
-  drawRoad(ground);
-  document.addEventListener('keydown', event => move(event, horse));
+  const groundViewEle = document.getElementById('ground');
+  const horse = new Horse('horse-1', { x: 680, y: 150 }, { width: 120, height: 65 }, { dx: 3, dy: 10 });
+  const obstacles = [];
 
-  const obstacle = new Obstacle('obs-1', { x: 120, y: 120 }, 50, { x: 3, y: 0 })
-  drawObstacle(ground, obstacle);
+  document.addEventListener('keydown', event => moveHorse(event, horse));
+
+  const game = new Game(horse, obstacles, groundViewEle);
+  drawObstacle(groundViewEle, obstacles);
+  let count = -1;
 
   const id = setInterval(() => {
-    drawHorse(ground, horse)
-    updateRoad();
-    obstacle.move();
-    drawObstacle(ground, obstacle);
-  }, 100)
-}
+    count++;
+    if (count % 50 === 0) {
+      const id = obstacles.length;
+      obstacles.push(createObstacles(Obstacle, id));
+    }
+    drawHorse(groundViewEle, horse);
+    game.moveObstacle();
+    drawObstacle(groundViewEle, obstacles);
+    drawScore(game.getScore());
+
+    if (game.hasHorseHit()) {
+      stopHorse();
+      clearInterval(id);
+    };
+  }, 100);
+};
 
 window.onload = main;
