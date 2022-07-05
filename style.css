@@ -1,6 +1,6 @@
-#horse-1 {
+#bird-1 {
   position: absolute;
-  background-image: url('./running_horse.gif');
+  background-image: url('./bird.gif');
   background-size: contain;
   background-repeat: no-repeat;
 }
@@ -15,11 +15,20 @@
   background-color: black;
 }
 
+#message {
+  margin-left: 360px;
+  color: red;
+  font-size: 30px;
+}
+
 .ground {
   width: 800px;
   height: 400px;
   border: 1px solid black;
   position: absolute;
+  background-image: url("mountain.gif");
+  background-size: contain;
+
 }
 
 #score {

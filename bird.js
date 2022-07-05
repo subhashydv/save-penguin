@@ -1,4 +1,4 @@
-class Horse {
+class Bird {
   #id;
   #position;
   #size;

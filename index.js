@@ -1,11 +1,11 @@
 class Game {
-  #horse;
+  #bird;
   #obstacle;
   #groundViewEle;
   #score;
 
-  constructor(horse, obstacle, groundViewEle) {
-    this.#horse = horse;
+  constructor(bird, obstacle, groundViewEle) {
+    this.#bird = bird;
     this.#obstacle = obstacle;
     this.#groundViewEle = groundViewEle;
     this.#score = 0;
@@ -32,24 +32,24 @@ class Game {
     return this.#score;
   }
 
-  hasObstacleHit(obstacle, horseDetail) {
+  hasObstacleHit(obstacle, birdDetail) {
     const obstacleDetail = getEntityDetail(obstacle);
 
-    if (obstacleDetail.max.x > horseDetail.min.x) {
-      if (obstacleDetail.max.y > horseDetail.min.y && obstacleDetail.min.y < horseDetail.max.y) {
+    if (obstacleDetail.max.x > birdDetail.min.x) {
+      if (obstacleDetail.max.y > birdDetail.min.y && obstacleDetail.min.y < birdDetail.max.y) {
         return true;
       }
     }
     return false;
   }
 
-  hasHorseHit() {
-    const horseDetail = getEntityDetail(this.#horse);
-    if (horseDetail.min.y < 0 || horseDetail.max.y > 400) {
+  hasBirdHit() {
+    const birdDetail = getEntityDetail(this.#bird);
+    if (birdDetail.min.y < 0 || birdDetail.max.y > 400) {
       return true;
     }
     for (const obstacle of this.#obstacle) {
-      if (this.hasObstacleHit(obstacle, horseDetail)) {
+      if (this.hasObstacleHit(obstacle, birdDetail)) {
         return true;
       };
     }
@@ -90,16 +90,16 @@ const drawObstacle = (ground, obstacles) => {
   });
 };
 
-const drawHorse = (ground, horse) => {
-  drawObject(ground, horse);
+const drawBird = (ground, bird) => {
+  drawObject(ground, bird);
 };
 
-const moveHorse = (event, horse) => {
+const moveBird = (event, bird) => {
   if (event.key === 'ArrowUp') {
-    horse.moveUp();
+    bird.moveUp();
   }
   if (event.key === 'ArrowDown') {
-    horse.moveDown();
+    bird.moveDown();
   }
 };
 
@@ -110,9 +110,13 @@ const getEntityDetail = entity => {
   return { min, max };
 };
 
-const stopHorse = () => {
-  const horse = document.getElementById('horse-1');
-  horse.style.backgroundImage = 'url("./horseStopped.png")';
+const stopGame = () => {
+  const bird = document.getElementById('bird-1');
+  const view = document.getElementById('ground');
+  const message = document.getElementById('message');
+  bird.style.backgroundImage = 'url("./stoppedBird.png")';
+  view.style.backgroundImage = 'url("./stoppedMountain.png")';
+  message.innerText = 'Game Over';
 };
 
 const randomInt = limit => {
@@ -125,12 +129,12 @@ const createObstacles = (Obstacle, id) => {
 
 const main = () => {
   const groundViewEle = document.getElementById('ground');
-  const horse = new Horse('horse-1', { x: 680, y: 150 }, { width: 120, height: 65 }, { dx: 3, dy: 10 });
+  const bird = new Bird('bird-1', { x: 680, y: 150 }, { width: 60, height: 65 }, { dx: 3, dy: 10 });
   const obstacles = [];
 
-  document.addEventListener('keydown', event => moveHorse(event, horse));
+  document.addEventListener('keydown', event => moveBird(event, bird));
 
-  const game = new Game(horse, obstacles, groundViewEle);
+  const game = new Game(bird, obstacles, groundViewEle);
   drawObstacle(groundViewEle, obstacles);
   let count = -1;
 
@@ -140,13 +144,13 @@ const main = () => {
       const id = obstacles.length;
       obstacles.push(createObstacles(Obstacle, id));
     }
-    drawHorse(groundViewEle, horse);
+    drawBird(groundViewEle, bird);
     game.moveObstacle();
     drawObstacle(groundViewEle, obstacles);
     drawScore(game.getScore());
 
-    if (game.hasHorseHit()) {
-      stopHorse();
+    if (game.hasBirdHit()) {
+      stopGame();
       clearInterval(id);
     };
   }, 100);
