@@ -129,7 +129,7 @@ const createObstacles = (Obstacle, id) => {
 
 const main = () => {
   const groundViewEle = document.getElementById('ground');
-  const bird = new Bird('bird-1', { x: 680, y: 150 }, { width: 60, height: 65 }, { dx: 3, dy: 10 });
+  const bird = new Bird('bird-1', { x: 730, y: 150 }, { width: 60, height: 65 }, { dx: 3, dy: 10 });
   const obstacles = [];
 
   document.addEventListener('keydown', event => moveBird(event, bird));
