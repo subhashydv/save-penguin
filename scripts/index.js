@@ -1,13 +1,13 @@
 (function () {
   class Game {
     #bird;
-    #obstacle;
+    #obstacles;
     #groundViewEle;
     #score;
 
-    constructor(bird, obstacle, groundViewEle) {
+    constructor(bird, obstacles, groundViewEle) {
       this.#bird = bird;
-      this.#obstacle = obstacle;
+      this.#obstacles = obstacles;
       this.#groundViewEle = groundViewEle;
       this.#score = 0;
     }
@@ -16,16 +16,16 @@
       return this.#groundViewEle.clientWidth;
     }
 
-    updateScore(obstacle) {
+    #updateScore(obstacle) {
       if (obstacle.hasReached(this.#groundWidth())) {
         this.#score++;
       }
     }
 
     moveObstacle() {
-      this.#obstacle.forEach(obstacle => {
+      this.#obstacles.forEach(obstacle => {
         obstacle.updatePosition(this.#groundWidth());
-        this.updateScore(obstacle);
+        this.#updateScore(obstacle);
       });
     };
 
@@ -34,7 +34,7 @@
     }
 
     hasObstacleHit(obstacle, birdDetail) {
-      const obstacleDetail = getEntityDetail(obstacle);
+      const obstacleDetail = getObjectDetail(obstacle);
 
       if (obstacleDetail.max.x > birdDetail.min.x) {
         if (obstacleDetail.max.y > birdDetail.min.y && obstacleDetail.min.y < birdDetail.max.y) {
@@ -45,11 +45,11 @@
     }
 
     hasBirdHit() {
-      const birdDetail = getEntityDetail(this.#bird);
+      const birdDetail = getObjectDetail(this.#bird);
       if (birdDetail.min.y < 0 || birdDetail.max.y > 400) {
         return true;
       }
-      for (const obstacle of this.#obstacle) {
+      for (const obstacle of this.#obstacles) {
         if (this.hasObstacleHit(obstacle, birdDetail)) {
           return true;
         };
@@ -104,7 +104,7 @@
     }
   };
 
-  const getEntityDetail = entity => {
+  const getObjectDetail = entity => {
     const { position, size } = entity.getDetails();
     const min = { x: position.x, y: position.y };
     const max = { x: position.x + size.width, y: position.y + size.height };
